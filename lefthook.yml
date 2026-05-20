@@ -12,6 +12,9 @@ pre-commit:
     mypy:
       glob: "dags/**/*.py"
       run: uv run mypy dags
+    pytest-unit:
+      glob: "{dags/**/*.py,tests/unit/**/*.py}"
+      run: uv run pytest tests/unit -q
 
 pre-push:
   commands:
@@ -21,3 +24,5 @@ pre-push:
       run: uv run ruff format --check .
     mypy:
       run: uv run mypy dags
+    pytest:
+      run: uv run pytest -q

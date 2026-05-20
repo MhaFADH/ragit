@@ -7,10 +7,27 @@ See [docs/design.md](docs/design.md) for the architecture, data flow, and testin
 ## Local setup
 
 ```sh
-uv sync
-uv run lefthook install
+make install
 ```
 
-`uv run lefthook install` is a one-time step per clone: it wires the hooks declared in `lefthook.yml` (ruff + mypy on pre-commit, full sweep on pre-push).
+Installs Python deps via `uv sync` and wires git hooks via `lefthook install`. One-time per clone.
+
+## Running locally
+
+```sh
+make up
+```
+
+Airflow standalone is available at <http://localhost:8080>. Login as `admin` — the random password generated on first boot is written to `simple_auth_manager_passwords.json.generated` inside the airflow container:
+
+```sh
+docker compose exec airflow cat /opt/airflow/simple_auth_manager_passwords.json.generated
+```
+
+Postgres exposes `5432` for inspection.
+
+Follow logs with `make logs`. Stop with `make down` (or `make down-v` to also drop the Postgres volume).
+
+Other shortcuts: `make ci` (full check suite), `make lint`, `make type`, `make test`.
 
 Work in progress.
