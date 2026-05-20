@@ -1,0 +1,23 @@
+pre-commit:
+  parallel: true
+  commands:
+    ruff-check:
+      glob: "*.py"
+      run: uv run ruff check --fix {staged_files}
+      stage_fixed: true
+    ruff-format:
+      glob: "*.py"
+      run: uv run ruff format {staged_files}
+      stage_fixed: true
+    mypy:
+      glob: "dags/**/*.py"
+      run: uv run mypy dags
+
+pre-push:
+  commands:
+    ruff-check:
+      run: uv run ruff check .
+    ruff-format:
+      run: uv run ruff format --check .
+    mypy:
+      run: uv run mypy dags
