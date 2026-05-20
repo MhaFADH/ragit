@@ -2,15 +2,22 @@
 
 Documentation-RAG ingestion pipeline. Crawls a configured set of git repositories, detects added/modified/deleted markdown files, chunks them, embeds the chunks with a local model, and writes them to a Postgres + pgvector store.
 
-See [docs/design.md](docs/design.md) for the architecture, data flow, and testing strategy.
+See [docs/architecture.md](docs/architecture.md) for component / sequence diagrams and [docs/design.md](docs/design.md) for full design notes (schema, error handling, testing strategy).
 
 ## Local setup
 
 ```sh
 make install
+cp .env.example .env
 ```
 
-Installs Python deps via `uv sync` and wires git hooks via `lefthook install`. One-time per clone.
+Set `AIRFLOW_FERNET_KEY` in `.env`:
+
+```sh
+uv run python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+Airflow UI login: `admin` / `admin`, defined in `docker/admin_password.json`. **Change this file before deploying anywhere that isn't your laptop.**
 
 ## Running locally
 
