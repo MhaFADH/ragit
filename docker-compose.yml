@@ -34,7 +34,9 @@ services:
     volumes:
       - ./dags:/opt/airflow/dags
       - ./docker/admin_password.json:/opt/airflow/simple_auth_manager_passwords.json.generated
+      - airflow_cache:/home/airflow/.cache
     command: standalone
 
 volumes:
   pgdata:
+  airflow_cache:

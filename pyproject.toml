@@ -27,7 +27,7 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --import-mode=importlib"
-pythonpath = ["dags"]
+pythonpath = ["dags", "tests"]
 
 [tool.coverage.run]
 source = ["dags/docs_rag"]
