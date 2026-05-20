@@ -1,0 +1,37 @@
+[project]
+name = "ragit"
+version = "0.1.0"
+description = "Documentation-RAG ingestion pipeline for markdown across git repositories."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "apache-airflow>=3.1,<4",
+    "psycopg[binary]>=3.2,<4",
+    "pgvector>=0.4,<1",
+    "fastembed>=0.4,<1",
+    "tokenizers>=0.20,<1",
+    "langchain-text-splitters>=0.3,<1",
+    "numpy>=1.26,<3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8,<9",
+    "pytest-cov>=5,<7",
+    "testcontainers[postgres]>=4,<5",
+    "ruff>=0.9,<1",
+    "mypy>=1.13,<2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.coverage.run]
+source = ["dags/docs_rag"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+skip_covered = false
