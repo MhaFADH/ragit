@@ -5,6 +5,7 @@ from datetime import datetime
 from airflow.sdk import dag
 
 from docs_rag.repo_diff.get_repos import get_repos
+from docs_rag.repo_diff.process_repo import process_repo
 
 
 @dag(
@@ -16,7 +17,7 @@ from docs_rag.repo_diff.get_repos import get_repos
     tags=["docs_rag"],
 )
 def docs_rag_repo_diff() -> None:
-    get_repos()
+    process_repo.expand(repo_cfg=get_repos())
 
 
 docs_rag_repo_diff()

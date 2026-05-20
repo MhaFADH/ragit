@@ -9,6 +9,7 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql
+      - ./config/docs_rag/init-docs-rag-db.sql:/docker-entrypoint-initdb.d/10-docs-rag.sql:ro
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 5s
@@ -27,6 +28,7 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: "admin:admin"
+      DOCS_RAG_DATABASE_URL: postgresql://docs_rag:docs_rag@postgres:5432/docs_rag
     ports:
       - "8080:8080"
     volumes:

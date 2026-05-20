@@ -142,8 +142,7 @@ get_repos
   └─ reads Variable docs_rag_repos
         → list[{url, branch?, name?}]
 process_repo.expand(repo_cfg=repos)        # parallel mapped tasks
-  ├─ reads Variable docs_rag_bitbucket_token
-  ├─ shallow_clone(url, tmpdir, branch, token)
+  ├─ shallow_clone(url, tmpdir, branch, token=repo_cfg.get("token"))
   ├─ current = walk_md_files(tmpdir)       # {posix_path: sha256}
   ├─ stored  = load_repo_state(conn, repo, branch)
   ├─ added, modified, deleted = compute_diff(current, stored)
@@ -222,8 +221,7 @@ Vector dimension (1024) is locked to the embedding model; changing models means 
 
 | Key | Where | Purpose |
 |---|---|---|
-| `docs_rag_repos` | Airflow Variable (JSON list) | List of `{url, branch?, name?}`. |
-| `docs_rag_bitbucket_token` | Airflow Variable | Bitbucket repository access token, injected into clone URLs. |
+| `docs_rag_repos` | Airflow Variable (JSON list) | List of `{url, branch?, name?, token?}`. `token` is optional (omit for public repos). Host must be one of `github.com`, `bitbucket.org`, `gitlab.com` — the token user is selected per host (`x-access-token`, `x-token-auth`, `oauth2` respectively). Unsupported hosts raise. |
 | `DOCS_RAG_DATABASE_URL` | env (docker-compose) | psycopg connection string for the app DB. |
 
 ## 8. Error handling & retries
@@ -231,8 +229,7 @@ Vector dimension (1024) is locked to the embedding model; changing models means 
 | Failure | Response |
 |---|---|
 | Missing/invalid `docs_rag_repos` Variable | `RuntimeError` with remediation hint. |
-| Missing `docs_rag_bitbucket_token` Variable | `RuntimeError` with remediation hint. |
-| `git clone` failure (auth, network, branch missing) | `subprocess.CalledProcessError`. Task `retries=2, retry_delay=2min`. Token stays out of logs via `capture_output=True`. |
+| `git clone` failure (auth, network, branch missing) | `subprocess.CalledProcessError`. Task `retries=2, retry_delay=2min`. Tokens stay out of logs via `capture_output=True`. |
 | Non-UTF-8 markdown file | Warn + skip. Pipeline continues. |
 | Markdown file >1 MB | Warn + proceed. |
 | Pg connection error | psycopg raises. Per-task retry config catches transient failures. |
@@ -306,7 +303,7 @@ Cache: uv's package cache + Docker layer cache for the testcontainers image.
 
 - MCP server exposing the index to assistants.
 - Query API / CLI to retrieve top-k chunks for a question.
-- Additional git hosts (GitHub, GitLab) with their own token shapes.
+- Supported git hosts are hardcoded: `github.com`, `bitbucket.org`, `gitlab.com`. Adding self-hosted or other hosts is out of scope.
 - Pluggable embedding model (currently hardcoded).
 - S3-backed XCom for large changesets.
 - Observability beyond Airflow's built-in task logs (metrics, traces).
