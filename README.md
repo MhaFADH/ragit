@@ -40,7 +40,8 @@ Then trigger the DAG `docs_rag_repo_diff` from the Dags page.
 | Target | Purpose |
 |---|---|
 | `make install` | Install Python deps and wire git hooks. One-time per clone. |
-| `make up` | Build and start the Airflow + Postgres stack (detached). |
+| `make up` | Start the Airflow + Postgres stack (detached). Uses existing image. |
+| `make up-build` | Rebuild the image and start the stack. Use after Dockerfile or dep changes. |
 | `make down` | Stop the stack. |
 | `make down-v` | Stop the stack and drop the Postgres volume (resets state). |
 | `make logs` | Follow Airflow logs. |

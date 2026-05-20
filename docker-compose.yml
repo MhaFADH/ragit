@@ -28,15 +28,14 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: "admin:admin"
+      AIRFLOW__CORE__FERNET_KEY: "MTRw_uIYSWwMuhJ9JplCfVeiMBSoNyiWB6hcion-nqg="
       DOCS_RAG_DATABASE_URL: postgresql://docs_rag:docs_rag@postgres:5432/docs_rag
     ports:
       - "8080:8080"
     volumes:
       - ./dags:/opt/airflow/dags
       - ./docker/admin_password.json:/opt/airflow/simple_auth_manager_passwords.json.generated
-      - airflow_cache:/home/airflow/.cache
     command: standalone
 
 volumes:
   pgdata:
-  airflow_cache:

@@ -6,8 +6,6 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 USER airflow
-RUN mkdir -p /home/airflow/.cache
-
 RUN pip install --no-cache-dir \
     "psycopg[binary]>=3.2,<4" \
     "pgvector>=0.4,<1" \
@@ -15,3 +13,6 @@ RUN pip install --no-cache-dir \
     "fastembed>=0.4,<1" \
     "tokenizers>=0.20,<1" \
     "numpy>=1.26,<3"
+
+RUN python -c "from fastembed import TextEmbedding; TextEmbedding(model_name='BAAI/bge-large-en-v1.5')" \
+ && python -c "from tokenizers import Tokenizer; Tokenizer.from_pretrained('BAAI/bge-large-en-v1.5')"

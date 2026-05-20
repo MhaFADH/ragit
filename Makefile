@@ -26,6 +26,9 @@ test-integration:
 ci: lint format-check type test
 
 up:
+	docker compose up -d
+
+up-build:
 	docker compose up -d --build
 
 down:
