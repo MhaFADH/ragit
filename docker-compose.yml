@@ -19,7 +19,7 @@ services:
   airflow:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/Airflow.Dockerfile
     depends_on:
       postgres:
         condition: service_healthy
@@ -36,6 +36,19 @@ services:
       - ./dags:/opt/airflow/dags
       - ./docker/admin_password.json:/opt/airflow/simple_auth_manager_passwords.json.generated
     command: standalone
+
+  mcp:
+    build:
+      context: .
+      dockerfile: docker/MCP.Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DOCS_RAG_DATABASE_URL: postgresql://docs_rag:docs_rag@postgres:5432/docs_rag
+      RAGIT_MCP_TOKEN: ${RAGIT_MCP_TOKEN}
+    ports:
+      - "8000:8000"
 
 volumes:
   pgdata:

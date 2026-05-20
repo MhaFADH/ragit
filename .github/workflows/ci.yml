@@ -30,7 +30,7 @@ jobs:
           python-version: "3.12"
           enable-cache: true
       - run: uv sync --frozen
-      - run: uv run mypy dags
+      - run: uv run mypy dags mcp_server
 
   unit:
     runs-on: ubuntu-latest

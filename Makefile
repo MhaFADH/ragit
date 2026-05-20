@@ -12,7 +12,7 @@ format-check:
 	uv run ruff format --check .
 
 type:
-	uv run mypy dags
+	uv run mypy dags mcp_server
 
 test:
 	uv run pytest -q

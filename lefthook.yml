@@ -10,10 +10,10 @@ pre-commit:
       run: uv run ruff format {staged_files}
       stage_fixed: true
     mypy:
-      glob: "dags/**/*.py"
-      run: uv run mypy dags
+      glob: "{dags/**/*.py,mcp_server/**/*.py}"
+      run: uv run mypy dags mcp_server
     pytest-unit:
-      glob: "{dags/**/*.py,tests/unit/**/*.py}"
+      glob: "{dags/**/*.py,mcp_server/**/*.py,tests/unit/**/*.py}"
       run: uv run pytest tests/unit -q
 
 pre-push:
@@ -23,6 +23,6 @@ pre-push:
     ruff-format:
       run: uv run ruff format --check .
     mypy:
-      run: uv run mypy dags
+      run: uv run mypy dags mcp_server
     pytest:
       run: uv run pytest -q
