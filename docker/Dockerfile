@@ -6,3 +6,8 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 USER airflow
+RUN pip install --no-cache-dir \
+    "psycopg[binary]>=3.2,<4" \
+    "pgvector>=0.4,<1" \
+    "langchain-text-splitters>=0.3,<1" \
+    "numpy>=1.26,<3"

@@ -16,10 +16,16 @@ def repo_name_from_url(url: str) -> str:
     return basename.removesuffix(".git") or basename
 
 
+def redact_url(url: str) -> str:
+    parsed = urlparse(url)
+    host = parsed.hostname or ""
+    return f"{parsed.scheme}://{host}{parsed.path}" if parsed.scheme else url
+
+
 def _inject_token(url: str, token: str) -> str:
     parsed = urlparse(url)
     if parsed.scheme != "https":
-        raise ValueError(f"Token auth requires an https:// URL; got: {url}")
+        raise ValueError(f"Token auth requires an https:// URL; got: {redact_url(url)}")
     host = parsed.hostname or ""
     if host not in _HOST_TOKEN_USERS:
         raise ValueError(
@@ -40,4 +46,13 @@ def shallow_clone(
     if branch:
         cmd += ["--branch", branch]
     cmd += [clone_url, str(dest)]
-    subprocess.run(cmd, check=True, capture_output=True, text=True)
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as exc:
+        safe_cmd = [*cmd[:-2], redact_url(clone_url), str(dest)]
+        raise subprocess.CalledProcessError(
+            exc.returncode,
+            safe_cmd,
+            exc.stdout,
+            exc.stderr,
+        ) from None

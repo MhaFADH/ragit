@@ -20,10 +20,13 @@ test:
 test-unit:
 	uv run pytest tests/unit -q
 
+test-integration:
+	uv run pytest tests/integration -q
+
 ci: lint format-check type test
 
 up:
-	docker compose up -d
+	docker compose up -d --build
 
 down:
 	docker compose down

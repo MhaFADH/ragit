@@ -1,7 +1,15 @@
 from __future__ import annotations
 
+import subprocess
+from pathlib import Path
+
 import pytest
-from docs_rag.repo_diff.utils.git_ops import _inject_token, repo_name_from_url
+from docs_rag.repo_diff.utils.git_ops import (
+    _inject_token,
+    redact_url,
+    repo_name_from_url,
+    shallow_clone,
+)
 
 
 def test_repo_name_strips_dot_git() -> None:
@@ -44,3 +52,37 @@ def test_inject_token_rejects_ssh() -> None:
 def test_inject_token_rejects_http() -> None:
     with pytest.raises(ValueError, match="https://"):
         _inject_token("http://bitbucket.org/org/foo.git", "abc")
+
+
+def test_redact_url_strips_userinfo() -> None:
+    assert (
+        redact_url("https://x-access-token:ghp_secret@github.com/org/foo.git")
+        == "https://github.com/org/foo.git"
+    )
+
+
+def test_redact_url_passthrough_when_no_credentials() -> None:
+    assert redact_url("https://github.com/org/foo.git") == "https://github.com/org/foo.git"
+
+
+def test_redact_url_passthrough_for_non_url() -> None:
+    assert redact_url("not-a-url") == "not-a-url"
+
+
+def test_shallow_clone_failure_redacts_token_in_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_run(cmd: list[str], **_: object) -> None:
+        raise subprocess.CalledProcessError(returncode=128, cmd=cmd)
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    with pytest.raises(subprocess.CalledProcessError) as exc_info:
+        shallow_clone(
+            "https://github.com/org/foo.git",
+            Path("/tmp/ragit_test_target"),
+            token="ghp_secret",
+        )
+    rendered = " ".join(exc_info.value.cmd)
+    assert "ghp_secret" not in rendered
+    assert "x-access-token" not in rendered

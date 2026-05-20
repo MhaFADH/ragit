@@ -9,7 +9,11 @@ from typing import Any
 
 from airflow.sdk import task
 from docs_rag.common import connect, log_prefix
-from docs_rag.repo_diff.utils.git_ops import repo_name_from_url, shallow_clone
+from docs_rag.repo_diff.utils.git_ops import (
+    redact_url,
+    repo_name_from_url,
+    shallow_clone,
+)
 from docs_rag.repo_diff.utils.hashing import compute_diff, walk_md_files
 from docs_rag.repo_diff.utils.state import load_repo_state
 
@@ -31,7 +35,7 @@ def process_repo(repo_cfg: dict[str, Any]) -> list[dict[str, Any]]:
         log.info(
             "%s cloning %s (branch=%s, auth=%s)",
             prefix,
-            url,
+            redact_url(url),
             branch or "<default>",
             "token" if token else "public",
         )

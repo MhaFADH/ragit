@@ -4,6 +4,7 @@ from datetime import datetime
 
 from airflow.sdk import dag
 
+from docs_rag.repo_diff.aggregate_changes import aggregate_changes
 from docs_rag.repo_diff.get_repos import get_repos
 from docs_rag.repo_diff.process_repo import process_repo
 
@@ -17,7 +18,8 @@ from docs_rag.repo_diff.process_repo import process_repo
     tags=["docs_rag"],
 )
 def docs_rag_repo_diff() -> None:
-    process_repo.expand(repo_cfg=get_repos())
+    per_repo = process_repo.expand(repo_cfg=get_repos())
+    aggregate_changes(per_repo)  # type: ignore[arg-type]
 
 
 docs_rag_repo_diff()
