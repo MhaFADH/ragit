@@ -66,7 +66,7 @@ ragit/
 |---|---|
 | `mcp = FastMCP("ragit")` | Server instance. |
 | Bearer middleware | Verifies `Authorization: Bearer <token>` on every request. 401 on missing / mismatch. |
-| `@mcp.tool() search_docs(query, top_k=5, repo=None)` | Calls `search.search`. Clamps `top_k` to `[1, 50]`. |
+| `@mcp.tool() search_docs(query, top_k=5, repo=None, branch="main")` | Calls `search.search`. Clamps `top_k` to `[1, 50]`. Filters on `branch` (defaults to `"main"` — pass `""` to reach repos ingested without an explicit branch). |
 | `@mcp.tool() list_repos()` | Calls `repos.list_repos`. |
 | `@mcp.tool() index_status()` | Calls `repos.index_status`. |
 | `__main__` | `mcp.run(transport="streamable-http", host="0.0.0.0", port=8000)`. |
@@ -75,7 +75,7 @@ ragit/
 
 | Symbol | Responsibility |
 |---|---|
-| `search(query, *, top_k, repo) -> list[dict]` | Public entry. Runs the four stages below. |
+| `search(query, *, top_k, repo, branch) -> list[dict]` | Public entry. Runs the four stages below. |
 | `_embed_query(query)` | Single-vector embed via `embedder.embed_query`. |
 | `_cosine_pool(qvec, *, pool_size, repo)` | pgvector HNSW: `ORDER BY embedding <=> %s LIMIT pool_size`. Returns rows with embeddings attached (MMR needs them). |
 | `_rerank(query, candidates)` | Mutates each candidate with `rerank_score` from the cross-encoder. Sorts by rerank desc. On reranker error: log, fall back to cosine order. |
@@ -126,16 +126,16 @@ mcp:
 
 ## 5. Data flow
 
-### `search_docs(query, top_k, repo)`
+### `search_docs(query, top_k, repo, branch)`
 
 ```
 HTTP POST /mcp ─ Authorization: Bearer <token>
   └─ auth.verify_bearer            # 401 if missing/mismatch
-search.search(query, top_k, repo)
+search.search(query, top_k, repo, branch)
   ├─ embedder.embed_query(query)   → np.ndarray (1024)
   ├─ _cosine_pool                  → top 20 chunks from pgvector
   │      SELECT … FROM chunks
-  │      [WHERE repo = %s]
+  │      WHERE [repo = %s AND] branch = %s
   │      ORDER BY embedding <=> %s LIMIT 20
   ├─ _rerank                       → mutates candidates w/ rerank_score
   ├─ _mmr                          → top_k diversified

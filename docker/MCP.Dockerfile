@@ -8,7 +8,13 @@ WORKDIR /app
 
 RUN pip install --no-cache-dir \
     "mcp>=1.12,<2" \
-    "psycopg[binary]>=3.2,<4"
+    "psycopg[binary]>=3.2,<4" \
+    "pgvector>=0.4,<1" \
+    "fastembed>=0.4,<1" \
+    "numpy>=1.26,<3"
+
+RUN python -c "from fastembed import TextEmbedding; TextEmbedding(model_name='BAAI/bge-large-en-v1.5')" \
+ && python -c "from fastembed.rerank.cross_encoder import TextCrossEncoder; TextCrossEncoder(model_name='BAAI/bge-reranker-base')"
 
 COPY mcp_server /app/mcp_server
 
