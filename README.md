@@ -4,6 +4,10 @@ Documentation-RAG ingestion pipeline. Crawls a configured set of git repositorie
 
 See [docs/architecture.md](docs/architecture.md) for component / sequence diagrams and [docs/design.md](docs/design.md) for full design notes (schema, error handling, testing strategy).
 
+## Prerequisites
+
+[`uv`](https://docs.astral.sh/uv/) and Docker. That's it.
+
 ## Local setup
 
 ```sh
@@ -41,6 +45,47 @@ To set the repo list, open **Admin → Variables → +**, key `docs_rag_repos`, 
 Per entry: `url` required (https only, host in `github.com` / `bitbucket.org` / `gitlab.com`); `token` optional (omit for public repos); `branch` optional (defaults to remote HEAD); `name` optional (defaults to URL basename).
 
 Then trigger the DAG `docs_rag_repo_diff` from the Dags page.
+
+## Connecting an LLM client to the MCP server
+
+The MCP server is at `http://localhost:8000/mcp` once `make up` is healthy. Bearer token = `RAGIT_MCP_TOKEN` in `.env`.
+
+### Claude Code
+
+```sh
+source .env
+claude mcp add --transport http ragit http://localhost:8000/mcp \
+  -H "Authorization: Bearer $RAGIT_MCP_TOKEN"
+```
+
+Add `--scope user` to register across all projects, `--scope project` to commit a `.mcp.json` to the repo. Verify with `claude mcp list`; inside a session, `/mcp`.
+
+### Codex CLI
+
+Edit `~/.codex/config.toml`:
+
+```toml
+experimental_use_rmcp_client = true
+
+[mcp_servers.ragit]
+url = "http://localhost:8000/mcp"
+bearer_token_env_var = "RAGIT_MCP_TOKEN"
+```
+
+Export the token before launching Codex so the env-var lookup resolves:
+
+```sh
+source .env && export RAGIT_MCP_TOKEN
+codex
+```
+
+### Other clients (Claude Desktop, Cursor)
+
+Same endpoint + bearer header. Format varies by client — refer to the client's MCP config docs and use:
+
+- URL: `http://localhost:8000/mcp`
+- Transport: streamable HTTP
+- Header: `Authorization: Bearer <RAGIT_MCP_TOKEN>`
 
 ## Make commands
 
